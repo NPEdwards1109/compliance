@@ -11,7 +11,7 @@ from openai import OpenAI
 from fastmcp import FastMCP
 
 from app.database import get_session
-from app.embeddings import embed, embed_batch, to_json
+from app.embeddings import cosine_similarity, embed, embed_batch, from_json, to_json
 from app.models import Document, DocRelationship, Requirement, Section
 
 logger = logging.getLogger(__name__)
@@ -88,6 +88,114 @@ _REQ_SCHEMA = {
         }
     },
 }
+
+
+_EDGE_PROMPT = """\
+You are building a knowledge graph of AI regulations and standards. A new document has just been ingested. Your job is to identify directed relationships FROM the new document TO existing documents already in the corpus.
+
+New document:
+  Title: {title}
+  Type: {doc_type}
+  Jurisdiction: {jurisdiction}
+  Summary: {summary}
+
+Existing corpus documents (candidates):
+{candidates}
+
+For each meaningful relationship, propose an edge using one of these types:
+- SUPERSEDES  — new doc replaces or revokes the existing doc
+- AMENDS      — new doc modifies or updates the existing doc
+- IMPLEMENTS  — new doc operationalizes/implements a framework in the existing doc
+- CITES       — new doc explicitly references or builds on the existing doc
+- RELATED_TO  — new doc covers substantially overlapping regulatory territory
+- ANALYZED_BY — new doc is an analysis, commentary, or guidance on the existing doc (reverse: use this when new=analysis, existing=primary law)
+
+Rules:
+- Only propose edges where the relationship is clearly justified — don't create noise
+- SUPERSEDES and AMENDS require the same jurisdiction and a clear versioning/replacement signal
+- IMPLEMENTS is for a standard/framework relationship (e.g. a national law implementing an EU directive)
+- Prefer specific types over RELATED_TO; use RELATED_TO only for genuine topical overlap without a stronger signal
+- You may propose 0 edges if no relationship is clearly warranted
+- Notes should be 1 sentence explaining why
+"""
+
+_EDGE_SCHEMA = {
+    "type": "object",
+    "required": ["edges"],
+    "properties": {
+        "edges": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["to_doc_id", "relationship"],
+                "properties": {
+                    "to_doc_id": {"type": "string"},
+                    "relationship": {
+                        "type": "string",
+                        "enum": ["SUPERSEDES", "AMENDS", "IMPLEMENTS", "CITES", "RELATED_TO", "ANALYZED_BY"],
+                    },
+                    "notes": {"type": "string"},
+                },
+            },
+        }
+    },
+}
+
+
+def _suggest_edges(
+    client: OpenAI,
+    new_doc_id: str,
+    title: str,
+    doc_type: str,
+    jurisdiction: str,
+    summary: str,
+    new_vec: list,
+) -> list[dict]:
+    """Find related existing documents and ask Claude to propose graph edges."""
+    with get_session() as session:
+        existing = (
+            session.query(Document)
+            .filter(Document.id != new_doc_id, Document.embedding.isnot(None))
+            .all()
+        )
+        candidates = []
+        for d in existing:
+            vec = from_json(d.embedding)
+            if vec is None:
+                continue
+            sim = cosine_similarity(new_vec, vec)
+            candidates.append((sim, d.id, d.title, d.doc_type, d.jurisdiction or "", d.summary or ""))
+
+    if not candidates:
+        return []
+
+    candidates.sort(reverse=True)
+    top = candidates[:15]
+
+    lines = []
+    for sim, did, dtitle, dtype, djur, dsummary in top:
+        summary_snip = dsummary[:200].replace("\n", " ")
+        lines.append(f"  - id={did}  [{djur}] {dtitle} ({dtype})  sim={sim:.2f}\n    {summary_snip}")
+    candidates_text = "\n".join(lines)
+
+    try:
+        result = _call_structured(
+            client,
+            _EDGE_PROMPT.format(
+                title=title,
+                doc_type=doc_type,
+                jurisdiction=jurisdiction or "unspecified",
+                summary=summary[:500],
+                candidates=candidates_text,
+            ),
+            tool_name="propose_edges",
+            schema=_EDGE_SCHEMA,
+            max_tokens=2048,
+        )
+        return result.get("edges", [])
+    except Exception as e:
+        logger.warning("Edge suggestion failed: %s", e)
+        return []
 
 
 def _get_llm_client() -> OpenAI:
@@ -297,15 +405,51 @@ def register_ingest_tools(mcp: FastMCP) -> None:
             for r in reqs_created:
                 session.add(r)
 
+        # Pass 3: auto-suggest and create edges to existing documents
+        edges_created = []
+        if auto_extract and summary:
+            logger.info("  [pass 3] Suggesting edges to existing corpus...")
+            client = _get_llm_client()
+            proposed = _suggest_edges(
+                client, doc_id, title, doc_type, jurisdiction or "unspecified", summary, doc_vec
+            )
+            logger.info("  [pass 3] → %d edges proposed", len(proposed))
+            valid_rels = {"SUPERSEDES", "AMENDS", "IMPLEMENTS", "CITES", "RELATED_TO", "ANALYZED_BY"}
+            with get_session() as session:
+                for edge in proposed:
+                    to_id = edge.get("to_doc_id")
+                    rel = edge.get("relationship", "").upper()
+                    if not to_id or rel not in valid_rels:
+                        continue
+                    # verify target exists
+                    if not session.get(Document, to_id):
+                        continue
+                    # skip duplicate
+                    existing_edge = (
+                        session.query(DocRelationship)
+                        .filter_by(from_id=doc_id, to_id=to_id, relationship=rel)
+                        .first()
+                    )
+                    if existing_edge:
+                        continue
+                    session.add(DocRelationship(
+                        from_id=doc_id,
+                        to_id=to_id,
+                        relationship=rel,
+                        notes=edge.get("notes", ""),
+                    ))
+                    edges_created.append({"to_doc_id": to_id, "relationship": rel, "notes": edge.get("notes", "")})
+
         return {
             "status": "ingested",
             "doc_id": doc_id,
             "title": title,
             "sections_extracted": len(sections_created),
             "requirements_extracted": len(reqs_created),
+            "edges_created": len(edges_created),
+            "edges": edges_created,
             "auto_extracted": auto_extract,
             "text_truncated_for_extraction": truncated,
-            "note": "Use link_documents to connect this to related documents." if auto_extract else None,
         }
 
     @mcp.tool()
