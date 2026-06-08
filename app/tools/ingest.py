@@ -90,56 +90,131 @@ _REQ_SCHEMA = {
 }
 
 
-_EDGE_PROMPT = """\
-You are building a knowledge graph of AI regulations and standards. A new document has just been ingested. Your job is to identify directed relationships FROM the new document TO existing documents already in the corpus.
+_EDGE_SYSTEM = """\
+You are building a knowledge graph of AI regulations and standards. A new document has been ingested and you must identify directed relationships FROM it TO existing documents in the corpus.
 
-New document:
-  Title: {title}
-  Type: {doc_type}
-  Jurisdiction: {jurisdiction}
-  Summary: {summary}
+You have tools to explore the corpus — use them to find relevant documents before proposing edges. Search by topic, jurisdiction, or document name. Retrieve summaries for anything promising.
 
-Existing corpus documents (candidates):
-{candidates}
-
-For each meaningful relationship, propose an edge using one of these types:
+Relationship types (from new doc → existing doc):
 - SUPERSEDES  — new doc replaces or revokes the existing doc
 - AMENDS      — new doc modifies or updates the existing doc
-- IMPLEMENTS  — new doc operationalizes/implements a framework in the existing doc
+- IMPLEMENTS  — new doc operationalizes a framework in the existing doc
 - CITES       — new doc explicitly references or builds on the existing doc
 - RELATED_TO  — new doc covers substantially overlapping regulatory territory
-- ANALYZED_BY — new doc is an analysis, commentary, or guidance on the existing doc (reverse: use this when new=analysis, existing=primary law)
+- ANALYZED_BY — new doc is an analysis/commentary on the existing doc
 
 Rules:
 - Only propose edges where the relationship is clearly justified — don't create noise
-- SUPERSEDES and AMENDS require the same jurisdiction and a clear versioning/replacement signal
-- IMPLEMENTS is for a standard/framework relationship (e.g. a national law implementing an EU directive)
-- Prefer specific types over RELATED_TO; use RELATED_TO only for genuine topical overlap without a stronger signal
-- You may propose 0 edges if no relationship is clearly warranted
-- Notes should be 1 sentence explaining why
+- SUPERSEDES/AMENDS require same jurisdiction and a clear versioning signal
+- Prefer specific types over RELATED_TO
+- You may propose 0 edges
+- When done, call propose_edges with your final list
 """
 
-_EDGE_SCHEMA = {
-    "type": "object",
-    "required": ["edges"],
-    "properties": {
-        "edges": {
-            "type": "array",
-            "items": {
+_EDGE_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "search_corpus",
+            "description": "Search existing corpus documents by keyword or topic. Returns doc IDs, titles, jurisdictions.",
+            "parameters": {
                 "type": "object",
-                "required": ["to_doc_id", "relationship"],
+                "required": ["query"],
                 "properties": {
-                    "to_doc_id": {"type": "string"},
-                    "relationship": {
-                        "type": "string",
-                        "enum": ["SUPERSEDES", "AMENDS", "IMPLEMENTS", "CITES", "RELATED_TO", "ANALYZED_BY"],
-                    },
-                    "notes": {"type": "string"},
+                    "query": {"type": "string"},
+                    "jurisdiction": {"type": "string", "description": "Optional filter, e.g. EU, US-Federal, UK"},
                 },
             },
-        }
+        },
     },
-}
+    {
+        "type": "function",
+        "function": {
+            "name": "get_doc_info",
+            "description": "Get metadata and summary for a specific document by ID.",
+            "parameters": {
+                "type": "object",
+                "required": ["doc_id"],
+                "properties": {"doc_id": {"type": "string"}},
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "propose_edges",
+            "description": "Submit your final proposed edges. Call this when done exploring.",
+            "parameters": {
+                "type": "object",
+                "required": ["edges"],
+                "properties": {
+                    "edges": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": ["to_doc_id", "relationship"],
+                            "properties": {
+                                "to_doc_id": {"type": "string"},
+                                "relationship": {
+                                    "type": "string",
+                                    "enum": ["SUPERSEDES", "AMENDS", "IMPLEMENTS", "CITES", "RELATED_TO", "ANALYZED_BY"],
+                                },
+                                "notes": {"type": "string"},
+                            },
+                        },
+                    }
+                },
+            },
+        },
+    },
+]
+
+
+def _run_edge_tool(name: str, args: dict, new_doc_id: str, new_vec: list) -> str:
+    """Execute an agent tool call and return a JSON string result."""
+    if name == "search_corpus":
+        query = args.get("query", "")
+        jurisdiction = args.get("jurisdiction")
+        with get_session() as session:
+            q = session.query(Document).filter(Document.id != new_doc_id)
+            if jurisdiction:
+                q = q.filter(Document.jurisdiction == jurisdiction)
+            # FTS search
+            try:
+                from sqlalchemy import text as sa_text
+                fts_q = f'"{query}"' if " " in query else query
+                ids = [
+                    r[0] for r in session.execute(
+                        sa_text("SELECT doc_id FROM documents_fts WHERE documents_fts MATCH :q LIMIT 20"),
+                        {"q": fts_q},
+                    ).fetchall()
+                ]
+                if ids:
+                    q = q.filter(Document.id.in_(ids))
+                    docs = q.all()
+                else:
+                    docs = []
+            except Exception:
+                docs = q.limit(20).all()
+            results = [
+                {"id": d.id, "title": d.title, "jurisdiction": d.jurisdiction, "doc_type": d.doc_type}
+                for d in docs
+            ]
+        return json.dumps(results)
+
+    elif name == "get_doc_info":
+        doc_id = args.get("doc_id")
+        with get_session() as session:
+            d = session.get(Document, doc_id)
+            if not d or d.id == new_doc_id:
+                return json.dumps({"error": "not found"})
+            return json.dumps({
+                "id": d.id, "title": d.title, "doc_type": d.doc_type,
+                "jurisdiction": d.jurisdiction, "status": d.status,
+                "effective_date": d.effective_date, "summary": (d.summary or "")[:600],
+            })
+
+    return json.dumps({"error": f"unknown tool {name}"})
 
 
 def _suggest_edges(
@@ -151,51 +226,62 @@ def _suggest_edges(
     summary: str,
     new_vec: list,
 ) -> list[dict]:
-    """Find related existing documents and ask Claude to propose graph edges."""
-    with get_session() as session:
-        existing = (
-            session.query(Document)
-            .filter(Document.id != new_doc_id, Document.embedding.isnot(None))
-            .all()
-        )
-        candidates = []
-        for d in existing:
-            vec = from_json(d.embedding)
-            if vec is None:
-                continue
-            sim = cosine_similarity(new_vec, vec)
-            candidates.append((sim, d.id, d.title, d.doc_type, d.jurisdiction or "", d.summary or ""))
-
-    if not candidates:
-        return []
-
-    candidates.sort(reverse=True)
-    top = candidates[:15]
-
-    lines = []
-    for sim, did, dtitle, dtype, djur, dsummary in top:
-        summary_snip = dsummary[:200].replace("\n", " ")
-        lines.append(f"  - id={did}  [{djur}] {dtitle} ({dtype})  sim={sim:.2f}\n    {summary_snip}")
-    candidates_text = "\n".join(lines)
-
-    try:
-        result = _call_structured(
-            client,
-            _EDGE_PROMPT.format(
-                title=title,
-                doc_type=doc_type,
-                jurisdiction=jurisdiction or "unspecified",
-                summary=summary[:500],
-                candidates=candidates_text,
+    """Agentic loop: let Claude search the corpus and propose graph edges."""
+    messages = [
+        {"role": "system", "content": _EDGE_SYSTEM},
+        {
+            "role": "user",
+            "content": (
+                f"New document just ingested:\n"
+                f"  Title: {title}\n"
+                f"  Type: {doc_type}\n"
+                f"  Jurisdiction: {jurisdiction}\n"
+                f"  Summary: {summary[:600]}\n\n"
+                "Search the corpus and propose edges. Call propose_edges when done."
             ),
-            tool_name="propose_edges",
-            schema=_EDGE_SCHEMA,
+        },
+    ]
+
+    max_iterations = 10
+    for i in range(max_iterations):
+        response = client.chat.completions.create(
+            model="claude-sonnet-4-6",
             max_tokens=2048,
+            tools=_EDGE_TOOLS,
+            messages=messages,
         )
-        return result.get("edges", [])
-    except Exception as e:
-        logger.warning("Edge suggestion failed: %s", e)
-        return []
+        msg = response.choices[0].message
+        # Append assistant turn — serialize tool_calls to dicts for the messages list
+        assistant_turn = {"role": "assistant", "content": msg.content or ""}
+        if msg.tool_calls:
+            assistant_turn["tool_calls"] = [tc.model_dump() for tc in msg.tool_calls]
+        messages.append(assistant_turn)
+
+        if not msg.tool_calls:
+            logger.info("  [pass 3] Agent stopped without calling propose_edges (iteration %d)", i + 1)
+            return []
+
+        results = []
+        done = False
+        for tc in msg.tool_calls:
+            fn = tc.function.name
+            args = json.loads(tc.function.arguments)
+            logger.info("  [pass 3] agent tool: %s(%s)", fn, list(args.keys()))
+
+            if fn == "propose_edges":
+                done = True
+                results.append({"role": "tool", "tool_call_id": tc.id, "content": "edges recorded"})
+                return args.get("edges", [])
+            else:
+                result = _run_edge_tool(fn, args, new_doc_id, new_vec)
+                results.append({"role": "tool", "tool_call_id": tc.id, "content": result})
+
+        messages.extend(results)
+        if done:
+            break
+
+    logger.warning("  [pass 3] Agent hit max iterations without proposing edges")
+    return []
 
 
 def _get_llm_client() -> OpenAI:
