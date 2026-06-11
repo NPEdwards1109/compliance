@@ -389,7 +389,7 @@ def _doc_page_html(doc: dict, req_groups: dict, out_conns: list, in_conns: list)
 body{{font-family:Inter,-apple-system,sans-serif;background:var(--cream);color:var(--charcoal)}}
 a{{color:inherit;text-decoration:none}}
 #topbar{{background:var(--navy);padding:0 32px;height:48px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;box-shadow:0 1px 0 rgba(0,0,0,.15)}}
-.logo-mark{{width:24px;height:24px;background:var(--stone);border-radius:4px;color:#fff;font-family:Montserrat,sans-serif;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}}
+.logo-mark{{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}}
 .logo-title{{font-size:13px;font-weight:600;color:rgba(255,255,255,.9)}}
 .sep{{color:rgba(255,255,255,.25);font-size:12px}}
 .back-link{{font-size:12px;font-weight:500;color:rgba(255,255,255,.55)}}
@@ -438,7 +438,7 @@ main{{max-width:820px;margin:0 auto;padding:48px 32px 96px}}
 </head>
 <body>
 <div id="topbar">
-  <div class="logo-mark">C</div>
+  <div class="logo-mark"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512"><g transform="translate(144,156) scale(1.25)"><rect x="0" y="0" width="12" height="120" fill="#FFFFFF"/><polygon points="14,0 30,0 96,120 80,120" fill="#FFFFFF"/><rect x="84" y="0" width="12" height="120" fill="#FFFFFF"/><rect x="112" y="0" width="68" height="12" fill="#A79F93"/><rect x="112" y="54" width="58" height="12" fill="#A79F93"/><rect x="112" y="108" width="68" height="12" fill="#A79F93"/></g></svg></div>
   <span class="logo-title">Compliance</span>
   <span class="sep">&#183;</span>
   <a href="/ui/" class="back-link">&#8592; Knowledge Graph</a>
@@ -637,7 +637,7 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 #nav { width: 240px; min-width: 240px; background: var(--navy); display: flex; flex-direction: column; overflow: hidden; }
 #nav-header { padding: 13px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
 #nav-logo { display: flex; align-items: center; gap: 8px; }
-#nav-mark { width: 26px; height: 26px; background: var(--stone); color: #fff; border-radius: 4px; font-family: Montserrat, sans-serif; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; letter-spacing: 0.05em; }
+#nav-mark { width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 #nav-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); letter-spacing: 0.01em; }
 #nav-signout { font-size: 11px; color: rgba(255,255,255,0.38); text-decoration: none; }
 #nav-signout:hover { color: rgba(255,255,255,0.75); }
@@ -797,7 +797,7 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 <div id="nav">
   <div id="nav-header">
     <div id="nav-logo">
-      <div id="nav-mark">C</div>
+      <div id="nav-mark"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 512 512"><g transform="translate(144,156) scale(1.25)"><rect x="0" y="0" width="12" height="120" fill="#FFFFFF"/><polygon points="14,0 30,0 96,120 80,120" fill="#FFFFFF"/><rect x="84" y="0" width="12" height="120" fill="#FFFFFF"/><rect x="112" y="0" width="68" height="12" fill="#A79F93"/><rect x="112" y="54" width="58" height="12" fill="#A79F93"/><rect x="112" y="108" width="68" height="12" fill="#A79F93"/></g></svg></div>
       <span id="nav-title">Compliance</span>
     </div>
     <a id="nav-signout" href="/ui/logout">Sign out</a>
