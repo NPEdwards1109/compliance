@@ -60,18 +60,18 @@ _LOGIN_HTML = """\
 <meta charset="UTF-8">
 <title>Compliance — Login</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: Inter, -apple-system, sans-serif; background: #F3F2EF; display: flex; align-items: center; justify-content: center; height: 100vh; }
-.card { background: #fff; border: 1px solid #E7DFCF; border-radius: 4px; padding: 40px; width: 360px; }
-h1 { font-family: Raleway, sans-serif; font-size: 22px; font-weight: 700; color: #1F3D34; letter-spacing: 0.03em; margin-bottom: 28px; }
-label { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: #6b7068; margin-bottom: 6px; margin-top: 16px; }
+body { font-family: Inter, -apple-system, sans-serif; background: #F3EBDD; display: flex; align-items: center; justify-content: center; height: 100vh; }
+.card { background: #fff; border: 1px solid #E3DDD2; border-radius: 4px; padding: 40px; width: 360px; }
+h1 { font-family: Montserrat, sans-serif; font-size: 22px; font-weight: 700; color: #2F4057; letter-spacing: 0.03em; margin-bottom: 28px; }
+label { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: #7A746A; margin-bottom: 6px; margin-top: 16px; }
 label:first-of-type { margin-top: 0; }
-input { width: 100%; padding: 9px 12px; border-radius: 4px; border: 1px solid #E7DFCF; background: #fff; color: #222427; font-size: 14px; font-family: Inter, sans-serif; }
-input:focus { outline: none; border-color: #1F3D34; }
-button { margin-top: 24px; width: 100%; padding: 10px; border-radius: 4px; border: none; background: #1F3D34; color: #ffffff; font-size: 13px; font-weight: 500; cursor: pointer; font-family: Inter, sans-serif; }
-button:hover { background: #2d5246; }
+input { width: 100%; padding: 9px 12px; border-radius: 4px; border: 1px solid #E3DDD2; background: #fff; color: #222427; font-size: 14px; font-family: Inter, sans-serif; }
+input:focus { outline: none; border-color: #2F4057; }
+button { margin-top: 24px; width: 100%; padding: 10px; border-radius: 4px; border: none; background: #2F4057; color: #ffffff; font-size: 13px; font-weight: 500; cursor: pointer; font-family: Inter, sans-serif; }
+button:hover { background: #3d5270; }
 .err { margin-top: 12px; font-size: 13px; color: #dc2626; text-align: center; }
 </style>
 </head>
@@ -382,14 +382,14 @@ def _doc_page_html(doc: dict, req_groups: dict, out_conns: list, in_conns: list)
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title_e} &#8212; Compliance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{{--forest:#1F3D34;--forest-m:#2d5246;--clay:#C36A4A;--clay-d:#a8573a;--clay-s:#FAF0EB;--sand:#E7DFCF;--fog:#F3F2EF;--white:#ffffff;--charcoal:#222427;--muted:#6b7068}}
+:root{{--navy:#2F4057;--navy-m:#3d5270;--stone:#A79F93;--stone-d:#8a8278;--stone-s:#EDE5D8;--line:#E3DDD2;--cream:#F3EBDD;--white:#ffffff;--charcoal:#222427;--muted:#7A746A}}
 *{{box-sizing:border-box;margin:0;padding:0}}
-body{{font-family:Inter,-apple-system,sans-serif;background:var(--fog);color:var(--charcoal)}}
+body{{font-family:Inter,-apple-system,sans-serif;background:var(--cream);color:var(--charcoal)}}
 a{{color:inherit;text-decoration:none}}
-#topbar{{background:var(--forest);padding:0 32px;height:48px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;box-shadow:0 1px 0 rgba(0,0,0,.15)}}
-.logo-mark{{width:24px;height:24px;background:var(--clay);border-radius:4px;color:#fff;font-family:Raleway,sans-serif;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}}
+#topbar{{background:var(--navy);padding:0 32px;height:48px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;box-shadow:0 1px 0 rgba(0,0,0,.15)}}
+.logo-mark{{width:24px;height:24px;background:var(--stone);border-radius:4px;color:#fff;font-family:Montserrat,sans-serif;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}}
 .logo-title{{font-size:13px;font-weight:600;color:rgba(255,255,255,.9)}}
 .sep{{color:rgba(255,255,255,.25);font-size:12px}}
 .back-link{{font-size:12px;font-weight:500;color:rgba(255,255,255,.55)}}
@@ -401,23 +401,23 @@ main{{max-width:820px;margin:0 auto;padding:48px 32px 96px}}
 .chips{{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px}}
 .chip{{padding:3px 9px;border-radius:4px;font-size:11px;font-weight:500}}
 .chip-jur{{color:#fff}}
-.chip-type{{background:var(--fog);border:1px solid var(--sand);color:var(--muted)}}
+.chip-type{{background:var(--cream);border:1px solid var(--line);color:var(--muted)}}
 .chip-enacted{{background:#f0fdf4;color:#166534}}
-.chip-proposed{{background:var(--clay-s);color:var(--clay-d)}}
-.chip-superseded{{background:var(--fog);color:var(--muted);border:1px solid var(--sand)}}
-.chip-draft{{background:var(--clay-s);color:var(--clay-d)}}
-.chip-meta{{background:var(--fog);border:1px solid var(--sand);color:var(--muted)}}
-.doc-title{{font-family:Raleway,sans-serif;font-size:28px;font-weight:700;color:var(--forest);letter-spacing:.01em;line-height:1.3;margin-bottom:18px}}
+.chip-proposed{{background:var(--stone-s);color:var(--muted)}}
+.chip-superseded{{background:var(--cream);color:var(--muted);border:1px solid var(--line)}}
+.chip-draft{{background:var(--stone-s);color:var(--muted)}}
+.chip-meta{{background:var(--cream);border:1px solid var(--line);color:var(--muted)}}
+.doc-title{{font-family:Montserrat,sans-serif;font-size:28px;font-weight:700;color:var(--navy);letter-spacing:.01em;line-height:1.3;margin-bottom:18px}}
 .doc-summary{{font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:18px}}
-.source-link{{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:500;color:var(--forest);text-decoration:underline;text-underline-offset:3px;margin-bottom:44px}}
-.source-link:hover{{color:var(--clay-d)}}
+.source-link{{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:500;color:var(--navy);text-decoration:underline;text-underline-offset:3px;margin-bottom:44px}}
+.source-link:hover{{color:var(--stone-d)}}
 .section{{margin-bottom:52px}}
-.section-hd{{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:12px;border-bottom:1px solid var(--sand);margin-bottom:20px}}
+.section-hd{{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:20px}}
 .conn-group{{margin-bottom:18px}}
 .rel-hd{{font-size:12px;font-weight:600;color:var(--charcoal);margin-bottom:8px;display:flex;align-items:center;gap:6px}}
-.rel-arrow{{font-size:14px;color:var(--clay)}}
-.conn-card{{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border:1px solid var(--sand);border-radius:4px;background:var(--white);margin-bottom:4px;cursor:pointer;transition:background .1s}}
-.conn-card:hover{{background:var(--fog)}}
+.rel-arrow{{font-size:14px;color:var(--stone)}}
+.conn-card{{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border:1px solid var(--line);border-radius:4px;background:var(--white);margin-bottom:4px;cursor:pointer;transition:background .1s}}
+.conn-card:hover{{background:var(--cream)}}
 .jbadge{{padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;color:#fff;flex-shrink:0;margin-top:2px}}
 .conn-body{{flex:1;min-width:0}}
 .conn-title{{font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.4}}
@@ -425,11 +425,11 @@ main{{max-width:820px;margin:0 auto;padding:48px 32px 96px}}
 .obl-group{{margin-bottom:28px}}
 .obl-hd{{font-size:12px;font-weight:700;color:var(--charcoal);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em}}
 .obl-count{{font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted)}}
-.req-item{{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1px solid var(--sand);border-radius:4px;background:var(--white);margin-bottom:4px}}
+.req-item{{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:4px;background:var(--white);margin-bottom:4px}}
 .obl-badge{{font-size:10px;font-weight:700;letter-spacing:.05em;padding:2px 6px;border-radius:3px;flex-shrink:0;margin-top:2px}}
-.obl-MUST{{background:var(--clay-s);color:var(--clay-d)}}
-.obl-SHOULD{{background:var(--fog);color:var(--muted);border:1px solid var(--sand)}}
-.obl-MAY{{background:var(--fog);color:var(--muted);border:1px solid var(--sand)}}
+.obl-MUST{{background:var(--stone-s);color:var(--stone-d)}}
+.obl-SHOULD{{background:var(--cream);color:var(--muted);border:1px solid var(--line)}}
+.obl-MAY{{background:var(--cream);color:var(--muted);border:1px solid var(--line)}}
 .req-body{{flex:1;min-width:0}}
 .req-text{{font-size:13px;color:var(--charcoal);line-height:1.6}}
 .req-applies{{font-size:11px;color:var(--muted);margin-top:5px;font-style:italic}}
@@ -616,19 +616,19 @@ _UI_HTML = """\
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Compliance — AI Regulation Knowledge Graph</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --navy: #1F3D34;
-  --navy-mid: #2d5246;
-  --gold: #C36A4A;
-  --gold-h: #a8573a;
-  --gold-s: #FAF0EB;
+  --navy: #2F4057;
+  --navy-mid: #3d5270;
+  --stone: #A79F93;
+  --stone-d: #8a8278;
+  --stone-s: #EDE5D8;
   --white: #ffffff;
-  --surface: #F3F2EF;
-  --border: #E7DFCF;
+  --surface: #F3EBDD;
+  --border: #E3DDD2;
   --text: #222427;
-  --muted: #6b7068;
+  --muted: #7A746A;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100vh; background: var(--surface); color: var(--text); overflow: hidden; }
@@ -637,7 +637,7 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 #nav { width: 240px; min-width: 240px; background: var(--navy); display: flex; flex-direction: column; overflow: hidden; }
 #nav-header { padding: 13px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
 #nav-logo { display: flex; align-items: center; gap: 8px; }
-#nav-mark { width: 26px; height: 26px; background: var(--gold); color: #fff; border-radius: 4px; font-family: Raleway, sans-serif; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; letter-spacing: 0.05em; }
+#nav-mark { width: 26px; height: 26px; background: var(--stone); color: #fff; border-radius: 4px; font-family: Montserrat, sans-serif; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; letter-spacing: 0.05em; }
 #nav-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); letter-spacing: 0.01em; }
 #nav-signout { font-size: 11px; color: rgba(255,255,255,0.38); text-decoration: none; }
 #nav-signout:hover { color: rgba(255,255,255,0.75); }
@@ -645,7 +645,7 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 .group-label { padding: 14px 14px 4px; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.32); text-transform: uppercase; letter-spacing: 0.1em; }
 .doc-item { padding: 7px 14px; cursor: pointer; border-left: 2px solid transparent; transition: background 0.1s; }
 .doc-item:hover { background: rgba(255,255,255,0.07); }
-.doc-item.selected { background: rgba(195,106,74,0.15); border-left-color: var(--gold); }
+.doc-item.selected { background: rgba(167,159,147,0.18); border-left-color: var(--stone); }
 .doc-item.superseded { opacity: 0.42; }
 .doc-item.superseded .di-title { text-decoration: line-through; }
 .di-title { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.78); line-height: 1.4; }
@@ -677,30 +677,30 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 
 /* Welcome */
 .welcome { max-width: 540px; }
-.welcome h2 { font-family: Raleway, sans-serif; font-size: 28px; font-weight: 600; color: var(--navy); letter-spacing: -0.02em; margin-bottom: 10px; }
+.welcome h2 { font-family: Montserrat, sans-serif; font-size: 28px; font-weight: 600; color: var(--navy); letter-spacing: -0.02em; margin-bottom: 10px; }
 .welcome p { color: var(--muted); font-size: 14px; line-height: 1.65; margin-bottom: 24px; }
 .welcome p:last-child { margin-bottom: 0; margin-top: -8px; font-size: 13px; }
 .stat-row { display: flex; gap: 14px; margin-bottom: 24px; }
 .stat-box { border: 1px solid var(--border); border-radius: 4px; padding: 22px 24px; flex: 1; background: var(--white); border-top: 3px solid transparent; transition: border-top-color 0.15s; }
-.stat-box:hover { border-top-color: var(--gold); }
-.stat-box .sv { font-family: Raleway, sans-serif; font-size: 32px; font-weight: 600; color: var(--navy); letter-spacing: -0.02em; }
+.stat-box:hover { border-top-color: var(--stone); }
+.stat-box .sv { font-family: Montserrat, sans-serif; font-size: 32px; font-weight: 600; color: var(--navy); letter-spacing: -0.02em; }
 .stat-box .sl { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-top: 4px; }
 
 /* Doc detail */
 .doc-detail { max-width: 680px; }
-.dd-title { font-family: Raleway, sans-serif; font-size: 22px; font-weight: 600; color: var(--navy); line-height: 1.35; letter-spacing: -0.02em; margin-bottom: 12px; }
+.dd-title { font-family: Montserrat, sans-serif; font-size: 22px; font-weight: 600; color: var(--navy); line-height: 1.35; letter-spacing: -0.02em; margin-bottom: 12px; }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 16px; }
 .chip { padding: 3px 9px; border-radius: 4px; font-size: 11px; font-weight: 500; }
 .chip-jur { color: #fff; }
 .chip-type { background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
 .chip-enacted { background: #f0fdf4; color: #166534; }
-.chip-proposed { background: var(--gold-s); color: var(--gold-h); }
+.chip-proposed { background: var(--stone-s); color: var(--stone-d); }
 .chip-superseded { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
-.chip-draft { background: var(--gold-s); color: var(--gold-h); }
+.chip-draft { background: var(--stone-s); color: var(--stone-d); }
 .chip-meta { background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
 .dd-summary { font-size: 14px; color: var(--muted); line-height: 1.65; margin-bottom: 16px; }
 .source-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 500; color: var(--navy); text-decoration: underline; text-underline-offset: 3px; margin-bottom: 28px; }
-.source-link:hover { color: var(--gold-h); }
+.source-link:hover { color: var(--stone-d); }
 .section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 .conn-group { margin-bottom: 18px; }
 .rel-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
@@ -710,7 +710,7 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 .conn-body { flex: 1; min-width: 0; }
 .conn-title { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.4; }
 .conn-link { font-size: 11px; font-weight: 500; color: var(--navy); text-decoration: underline; text-underline-offset: 2px; display: inline-block; margin-top: 3px; }
-.conn-link:hover { color: var(--gold-h); }
+.conn-link:hover { color: var(--stone-d); }
 .conn-notes { font-size: 11px; color: var(--muted); margin-top: 3px; font-style: italic; }
 .no-conn { font-size: 13px; color: var(--muted); font-style: italic; padding: 8px 0; }
 
@@ -718,7 +718,7 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 .list-view { max-width: 680px; }
 .list-back { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); cursor: pointer; margin-bottom: 18px; }
 .list-back:hover { color: var(--text); }
-.list-heading { font-family: Raleway, sans-serif; font-size: 22px; font-weight: 600; color: var(--navy); letter-spacing: -0.02em; margin-bottom: 20px; }
+.list-heading { font-family: Montserrat, sans-serif; font-size: 22px; font-weight: 600; color: var(--navy); letter-spacing: -0.02em; margin-bottom: 20px; }
 .list-count { font-family: Inter, sans-serif; font-size: 14px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
 .list-group-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 18px 0 7px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
 .list-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 4px; border: 1px solid var(--border); background: var(--white); margin-bottom: 4px; cursor: pointer; transition: background 0.1s; }
@@ -742,7 +742,7 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 .concept-doc-meta { font-size: 11px; color: var(--muted); white-space: nowrap; }
 .concept-req { display: flex; align-items: flex-start; gap: 8px; padding: 9px 12px; margin-bottom: 4px; border: 1px solid var(--border); border-radius: 4px; background: var(--white); }
 .obl-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 1px; }
-.obl-MUST { background: var(--gold-s); color: var(--gold-h); }
+.obl-MUST { background: var(--stone-s); color: var(--stone-d); }
 .obl-SHOULD { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
 .obl-MAY { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
 .concept-req-text { font-size: 13px; color: var(--text); line-height: 1.5; }
@@ -755,7 +755,7 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 #chat-header:hover { background: var(--surface); }
 #chat.collapsed #chat-header { border-bottom: none; }
 #chat-header-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-#chat-ctx { font-size: 11px; font-weight: 500; color: var(--gold-h); background: var(--gold-s); padding: 2px 8px; border-radius: 4px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#chat-ctx { font-size: 11px; font-weight: 500; color: var(--stone-d); background: var(--stone-s); padding: 2px 8px; border-radius: 4px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #chat-toggle { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 9px; padding: 0 2px; line-height: 1; font-family: Inter, sans-serif; }
 #chat-clear { font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0; font-family: Inter, sans-serif; }
 #chat-clear:hover, #chat-toggle:hover { color: var(--text); }
@@ -776,7 +776,7 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 .cmsg.assistant pre code { background: none; border: none; padding: 0; font-size: 12px; line-height: 1.55; }
 .cmsg.assistant strong { font-weight: 600; }
 .cmsg.assistant em { font-style: italic; }
-.cmsg.assistant h1, .cmsg.assistant h2, .cmsg.assistant h3 { font-family: Raleway, sans-serif; font-weight: 700; color: var(--navy); margin: 14px 0 6px; }
+.cmsg.assistant h1, .cmsg.assistant h2, .cmsg.assistant h3 { font-family: Montserrat, sans-serif; font-weight: 700; color: var(--navy); margin: 14px 0 6px; }
 .cmsg.assistant h1 { font-size: 16px; }
 .cmsg.assistant h2 { font-size: 15px; }
 .cmsg.assistant h3 { font-size: 14px; }
