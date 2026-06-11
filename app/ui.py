@@ -438,7 +438,7 @@ main{{max-width:820px;margin:0 auto;padding:48px 32px 96px}}
 </head>
 <body>
 <div id="topbar">
-  <div class="logo-mark"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512"><g transform="translate(144,156) scale(1.25)"><rect x="0" y="0" width="12" height="120" fill="#FFFFFF"/><polygon points="14,0 30,0 96,120 80,120" fill="#FFFFFF"/><rect x="84" y="0" width="12" height="120" fill="#FFFFFF"/><rect x="112" y="0" width="68" height="12" fill="#A79F93"/><rect x="112" y="54" width="58" height="12" fill="#A79F93"/><rect x="112" y="108" width="68" height="12" fill="#A79F93"/></g></svg></div>
+  <div class="logo-mark"><svg xmlns="http://www.w3.org/2000/svg" width="34" height="26" viewBox="120 130 272 172"><g transform="translate(144,156) scale(1.25)"><rect x="0" y="0" width="12" height="120" fill="#FFFFFF"/><polygon points="14,0 30,0 96,120 80,120" fill="#FFFFFF"/><rect x="84" y="0" width="12" height="120" fill="#FFFFFF"/><rect x="112" y="0" width="68" height="12" fill="#A79F93"/><rect x="112" y="54" width="58" height="12" fill="#A79F93"/><rect x="112" y="108" width="68" height="12" fill="#A79F93"/></g></svg></div>
   <span class="logo-title">Compliance</span>
   <span class="sep">&#183;</span>
   <a href="/ui/" class="back-link">&#8592; Knowledge Graph</a>
@@ -637,7 +637,7 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 #nav { width: 240px; min-width: 240px; background: var(--navy); display: flex; flex-direction: column; overflow: hidden; }
 #nav-header { padding: 13px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
 #nav-logo { display: flex; align-items: center; gap: 8px; }
-#nav-mark { width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+#nav-mark { width: 38px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 #nav-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); letter-spacing: 0.01em; }
 #nav-signout { font-size: 11px; color: rgba(255,255,255,0.38); text-decoration: none; }
 #nav-signout:hover { color: rgba(255,255,255,0.75); }
@@ -797,7 +797,7 @@ body { font-family: Inter, -apple-system, sans-serif; display: flex; height: 100
 <div id="nav">
   <div id="nav-header">
     <div id="nav-logo">
-      <div id="nav-mark"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 512 512"><g transform="translate(144,156) scale(1.25)"><rect x="0" y="0" width="12" height="120" fill="#FFFFFF"/><polygon points="14,0 30,0 96,120 80,120" fill="#FFFFFF"/><rect x="84" y="0" width="12" height="120" fill="#FFFFFF"/><rect x="112" y="0" width="68" height="12" fill="#A79F93"/><rect x="112" y="54" width="58" height="12" fill="#A79F93"/><rect x="112" y="108" width="68" height="12" fill="#A79F93"/></g></svg></div>
+      <div id="nav-mark"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="28" viewBox="120 130 272 172"><g transform="translate(144,156) scale(1.25)"><rect x="0" y="0" width="12" height="120" fill="#FFFFFF"/><polygon points="14,0 30,0 96,120 80,120" fill="#FFFFFF"/><rect x="84" y="0" width="12" height="120" fill="#FFFFFF"/><rect x="112" y="0" width="68" height="12" fill="#A79F93"/><rect x="112" y="54" width="58" height="12" fill="#A79F93"/><rect x="112" y="108" width="68" height="12" fill="#A79F93"/></g></svg></div>
       <span id="nav-title">Compliance</span>
     </div>
     <a id="nav-signout" href="/ui/logout">Sign out</a>
