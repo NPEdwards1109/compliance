@@ -306,59 +306,92 @@ def _call_structured(client, prompt: str, tool_name: str, schema: dict, max_toke
     raise ValueError(f"Model did not return expected tool call '{tool_name}'")
 
 
-def _extract_structure(title: str, doc_type: str, jurisdiction: str, text: str) -> dict:
-    """Two-pass extraction: extractor followed by a critic that catches errors and omissions."""
-    client = _get_llm_client()
+# Above this many characters, a single document is digested in chunks (map-reduce)
+# rather than sent to the LLM in one call. Keeps every extraction request small
+# enough to avoid upstream gateway timeouts (502s) on long generations.
+_SINGLE_PASS_LIMIT = 24000
+_CHUNK_SIZE = 14000
 
-    truncated = text[:150000]
-    was_truncated = len(text) > 150000
-
-    # --- Pass 1: Extractor ---
-    extractor_schema = {
-        "type": "object",
-        "required": ["summary", "sections", "requirements"],
-        "properties": {
-            "summary": {"type": "string"},
-            "sections": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "required": ["title", "content"],
-                    "properties": {
-                        "section_number": {"type": "string"},
-                        "title": {"type": "string"},
-                        "content": {"type": "string"},
-                    },
+_EXTRACTOR_SCHEMA = {
+    "type": "object",
+    "required": ["summary", "sections", "requirements"],
+    "properties": {
+        "summary": {"type": "string"},
+        "sections": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["title", "content"],
+                "properties": {
+                    "section_number": {"type": "string"},
+                    "title": {"type": "string"},
+                    "content": {"type": "string"},
                 },
             },
-            "requirements": _REQ_SCHEMA["properties"]["requirements"],
         },
-    }
+        "requirements": _REQ_SCHEMA["properties"]["requirements"],
+    },
+}
 
-    logger.info("  [pass 1] Extracting sections and requirements...")
+_SUMMARY_SYNTH_PROMPT = """\
+You are writing a single cohesive summary of a {doc_type} titled "{title}" (jurisdiction: {jurisdiction}).
+
+Below are summaries of consecutive parts of the document, in order. Synthesize them into ONE
+3-5 sentence summary covering the document's overall purpose, scope, and key obligations.
+Do not refer to "parts" or "sections" — write as if summarizing the whole document. Return only the summary text.
+
+Partial summaries:
+{partials}
+"""
+
+
+def _chunk_text(text: str, max_chars: int = _CHUNK_SIZE) -> list[str]:
+    """Split text into chunks of <= max_chars, breaking on line boundaries where possible."""
+    chunks: list[str] = []
+    cur: list[str] = []
+    cur_len = 0
+    for line in text.split("\n"):
+        line_len = len(line) + 1
+        if cur and cur_len + line_len > max_chars:
+            chunks.append("\n".join(cur))
+            cur, cur_len = [], 0
+        if line_len > max_chars:
+            # A single very long line — hard-split it.
+            for i in range(0, len(line), max_chars):
+                chunks.append(line[i:i + max_chars])
+            continue
+        cur.append(line)
+        cur_len += line_len
+    if cur:
+        chunks.append("\n".join(cur))
+    return chunks
+
+
+def _extract_single(client, title: str, doc_type: str, jurisdiction: str, text: str) -> dict:
+    """Two-pass extraction over one text block: extractor followed by a critic."""
+    logger.info("  [pass 1] Extracting sections and requirements (%d chars)...", len(text))
     initial = _call_structured(
         client,
         _EXTRACTION_PROMPT.format(
             title=title,
             doc_type=doc_type,
             jurisdiction=jurisdiction or "unspecified",
-            text=truncated,
+            text=text,
         ),
         tool_name="store_extraction",
-        schema=extractor_schema,
+        schema=_EXTRACTOR_SCHEMA,
     )
 
     initial_reqs = initial.get("requirements", [])
     logger.info("  [pass 1] → %d requirements, %d sections", len(initial_reqs), len(initial.get("sections", [])))
 
-    # --- Pass 2: Critic ---
     logger.info("  [pass 2] Critic reviewing extraction...")
     corrected = _call_structured(
         client,
         _CRITIC_PROMPT.format(
             title=title,
             jurisdiction=jurisdiction or "unspecified",
-            text=truncated,
+            text=text,
             requirements_json=json.dumps(initial_reqs, indent=2),
         ),
         tool_name="apply_corrections",
@@ -372,6 +405,95 @@ def _extract_structure(title: str, doc_type: str, jurisdiction: str, text: str) 
         "summary": initial.get("summary", ""),
         "sections": initial.get("sections", []),
         "requirements": final_reqs,
+    }
+
+
+def _dedup_sections(sections: list[dict]) -> list[dict]:
+    seen: set[str] = set()
+    out: list[dict] = []
+    for s in sections:
+        key = ((s.get("section_number") or "").strip().lower()
+               or (s.get("title") or "").strip().lower())
+        if key and key in seen:
+            continue
+        if key:
+            seen.add(key)
+        out.append(s)
+    return out
+
+
+def _dedup_requirements(reqs: list[dict]) -> list[dict]:
+    seen: set[str] = set()
+    out: list[dict] = []
+    for r in reqs:
+        key = " ".join((r.get("text") or "").lower().split())
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        out.append(r)
+    return out
+
+
+def _synthesize_summary(client, title: str, doc_type: str, jurisdiction: str, partials: list[str]) -> str:
+    """Reduce step: combine per-chunk summaries into one cohesive document summary."""
+    joined = "\n".join(f"- {s}" for s in partials if s)
+    response = client.chat.completions.create(
+        model="claude-sonnet-4-6",
+        max_tokens=512,
+        messages=[{
+            "role": "user",
+            "content": _SUMMARY_SYNTH_PROMPT.format(
+                title=title, doc_type=doc_type, jurisdiction=jurisdiction or "unspecified", partials=joined,
+            ),
+        }],
+    )
+    return (response.choices[0].message.content or "").strip()
+
+
+def _extract_structure(title: str, doc_type: str, jurisdiction: str, text: str) -> dict:
+    """Extract summary, sections, and requirements.
+
+    Small documents go through a single extractor+critic pass. Large documents are
+    digested map-reduce style ("compaction"): split into chunks, extract each chunk
+    independently, then merge sections/requirements and synthesize one summary. This
+    keeps every LLM request small enough to avoid upstream gateway timeouts.
+    """
+    client = _get_llm_client()
+
+    was_truncated = len(text) > 150000
+    text = text[:150000]
+
+    if len(text) <= _SINGLE_PASS_LIMIT:
+        result = _extract_single(client, title, doc_type, jurisdiction, text)
+        result["truncated"] = was_truncated
+        return result
+
+    # --- Map-reduce path for large documents ---
+    chunks = _chunk_text(text)
+    logger.info("  [chunked] digesting %d chars in %d chunks", len(text), len(chunks))
+
+    all_sections: list[dict] = []
+    all_reqs: list[dict] = []
+    partials: list[str] = []
+    for i, chunk in enumerate(chunks):
+        logger.info("  [chunk %d/%d] extracting...", i + 1, len(chunks))
+        part = _extract_single(
+            client, f"{title} (part {i + 1} of {len(chunks)})", doc_type, jurisdiction, chunk
+        )
+        all_sections.extend(part.get("sections", []))
+        all_reqs.extend(part.get("requirements", []))
+        if part.get("summary"):
+            partials.append(part["summary"])
+
+    sections = _dedup_sections(all_sections)
+    requirements = _dedup_requirements(all_reqs)
+    summary = _synthesize_summary(client, title, doc_type, jurisdiction, partials) if partials else ""
+    logger.info("  [chunked] merged → %d sections, %d requirements", len(sections), len(requirements))
+
+    return {
+        "summary": summary,
+        "sections": sections,
+        "requirements": requirements,
         "truncated": was_truncated,
     }
 
